@@ -86,6 +86,10 @@ if __name__=='__main__':
             return False
 
     def browse_app(En):
+        global allow_program
+        exee=""
+        for exe in allow_program:
+            exee+="*.{} ".format(str(exe))
         Enn = En.get()
         if Enn=="":
             Enn = "C:\\Program Files"
@@ -93,7 +97,7 @@ if __name__=='__main__':
             Enn="/".join(Enn.split("\\")).split("/")
             del Enn[-1]
             Enn="\\".join(Enn)
-        a = filedialog.askopenfilename(initialdir = Enn, title = "Multi-App (KhanhNguyen9872)", filetypes = (("All Type :3","*.*"), ))
+        a = filedialog.askopenfilename(initialdir = Enn, title = "Multi-App (KhanhNguyen9872)", filetypes = [("Application Type :3",exee)])
         if (str(a) != ""):
             a=str("\\".join(a.split("/")))
             En.delete(0, END)
@@ -114,21 +118,32 @@ if __name__=='__main__':
             else:
                 popup("FileNotFound","450x70","File [{}] not found!".format(str(cmd)))
             return
-        print("Starting ({}) [{}]...".format(str("/".join(cmd.split("\\")).split("/")[-1]),str(__)))
+        nameprogram=str("/".join(cmd.split("\\")).split("/")[-1])
+        global allow_program
+        if nameprogram.split(".")[-1] in allow_program:
+            pass
+        else:
+            popup("TypeFileError","450x70","File [{}] not allowed!")
+            return
+        print("Starting ({}) [{}]...".format(str(nameprogram),str(__)))
         global systemdrive,full_path
         if Path(str(systemdrive)+"\\\\Temp").is_dir():
             pass
         else:
             _=Popen("mkdir {}\\\\Temp".format(str(systemdrive)),shell=True,stdin=PIPE,stdout=DEVNULL,stderr=DEVNULL)
             sleep(1)
+        cmd = str(path.realpath(cmd))
         with open(str(systemdrive)+"\\\\Temp\\\\run.bat","w") as f:
             f.write("@echo off\nstart \"\" \""+str(cmd).replace("/","\\")+"\"")
         show_cons = 0
         if (show_cons == 1):
             show_console(__,cmd)
         else:
-            print('cd \"{2}\\Users\\{1}\" & \"{4}\\psexec.exe\" -u \"{0}\\\\{1}\" -p \"{3}\" \"{2}\\\\Temp\\\\run.bat\"'.format(str(gethostname()),str(__),str(systemdrive),str(globals()["pass{}".format(__)].get()),str(full_path)))
-            _=Popen('cd \"{2}\\Users\\{1}\" & \"{4}\\psexec.exe\" -u \"{0}\\\\{1}\" -p \"{3}\" \"{2}\\\\Temp\\\\run.bat\"'.format(str(gethostname()),str(__),str(systemdrive),str(globals()["pass{}".format(__)].get()),str(full_path)),shell=True,stdin=PIPE)
+            temp1 = getoutput('cd \"{2}\\Users\\{1}\" & \"{4}\\psexec.exe\" -u \"{0}\\\\{1}\" -p \"{3}\" \"{2}\\\\Temp\\\\run.bat\"'.format(str(gethostname()),str(__),str(systemdrive),str(globals()["pass{}".format(__)].get()),str(full_path))).split()
+            if (str(temp1[-7]+" "+temp1[-6]+" "+temp1[-5]+" "+temp1[-4]+" "+temp1[-3]+" "+temp1[-2]+" "+temp1[-1]) == "The user name or password is incorrect."):
+                popup("PasswordError","450x70","Password error! If your account doesn't have a password, leave it blank!")
+            elif (str(temp1[-3]+" "+temp1[-2]) == "error code") and (str(temp1[-1]) != "0."):
+                popup("ProgramExitCode","450x70","[{}] return error code {}".format(str(nameprogram),str(temp1[-1])))
         return
 
     def kill_process():
@@ -222,7 +237,7 @@ if __name__=='__main__':
             else:
                 list_user.append(str(item))
                 ___[str(item)]=""
-                globals()["pass{}".format(item)] = StringVar(main1, value='default text')
+                globals()["pass{}".format(item)] = StringVar(main1, value='12345678')
                 globals()["passw{}".format(item)] = Entry(main1, textvariable=globals()["pass{}".format(item)], show="#", bd=2, width=30)
                 listbox.insert(END, item)
                 user = getoutput("net user {}".format(str(item))).split()
@@ -367,7 +382,7 @@ if __name__=='__main__':
         exit()
     from subprocess import Popen,PIPE,getoutput
     from threading import Thread
-    from os import system, getpid, kill, getlogin, getenv
+    from os import system, getpid, kill, getlogin, getenv, path
     from pathlib import Path
     from time import sleep
     from socket import gethostname
@@ -379,13 +394,14 @@ if __name__=='__main__':
     except ImportError:
         from os import devnull
         DEVNULL = open(devnull, 'wb')
-    global set_bg,set_fg,set_entry_bg,set_button_bg,set_button_fg,__,___,pid,active,systemdrive,hide,full_path
+    global set_bg,set_fg,set_entry_bg,set_button_bg,set_button_fg,__,___,pid,active,systemdrive,hide,full_path,allow_program
     full_path=str("/".join(str(__file__).split("\\"))).split("/")
     del full_path[-1]
     full_path=str("\\".join(full_path))
     pid = getpid()
     systemdrive = getenv("SystemDrive")
     hide=1
+    allow_program=["exe","cmd","bat"]
     set_bg="white"
     set_fg="black"
     set_entry_bg="white"
