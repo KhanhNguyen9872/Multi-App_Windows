@@ -1,11 +1,11 @@
 if __name__=='__main__':
-    def popup(main,geometry,error):
+    def popup(main,error):
         global set_bg,set_fg,set_entry_bg,set_button_bg,set_button_fg
         mainerror = Tk()
         mainerror.title(f"{main} | Python (KhanhNguyen9872)")
         #mainerror.iconbitmap('khanh.ico')
         mainerror.configure(background=set_bg)
-        mainerror.geometry(f"{geometry}")
+        mainerror.geometry(center_screen(450,70,mainerror))
         mainerror.resizable(False, False)
         texterror = Text(mainerror, background=set_bg, foreground=set_fg,font=("Arial", 12, 'bold'))
         texterror.insert(INSERT, f"{error}")
@@ -26,7 +26,7 @@ if __name__=='__main__':
         mainerror.title("DeleteUser | Python (KhanhNguyen9872)")
         #mainerror.iconbitmap('khanh.ico')
         mainerror.configure(background=set_bg)
-        mainerror.geometry("450x70")
+        mainerror.geometry(center_screen(450,70,mainerror))
         mainerror.resizable(False, False)
         texterror = Text(mainerror, background=set_bg, foreground=set_fg,font=("Arial", 12, 'bold'))
         texterror.insert(INSERT, f"Do you want to delete [{__}]?")
@@ -45,7 +45,7 @@ if __name__=='__main__':
     def create(main,E_USER,E_PASS,E_RPASS):
         global main1
         if E_USER=="":
-            popup("TypeError","450x70","Username must not empty!")
+            popup("TypeError","Username must not empty!")
         elif E_PASS==E_RPASS:
             _=Popen('reg.exe add "HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Lsa" /v "LimitBlankPasswordUse" /t REG_DWORD /d "0" /f',shell=True,stdin=PIPE,stdout=DEVNULL,stderr=DEVNULL)
             _=Popen('net user | find /i "{0}" || net user {0} /add /fullname:"{0}" /active:yes'.format(str(E_USER)),shell=True,stdin=PIPE,stdout=DEVNULL,stderr=DEVNULL)
@@ -54,7 +54,7 @@ if __name__=='__main__':
             main1.destroy()
             tkinter_main()
         else:
-            popup("TypeError","450x70","The password you entered does not match!")
+            popup("TypeError","The password you entered does not match!")
         return
 
     def create_user():
@@ -112,30 +112,29 @@ if __name__=='__main__':
 
     def run_app(__,khanhnguyen9872):
         if __=="":
-            popup("NoUser","450x70",f"Please choose one user before Run!")
+            popup("NoUser",f"Please choose one user before Run!")
             return
         try:
             cmd=str(khanhnguyen9872.get())
         except ValueError:
-            popup("TypeError","450x70",f"Run cannot be empty!")
+            popup("TypeError",f"Run cannot be empty!")
             return
         cmd_path=Path(cmd)
         if cmd_path.is_file():
             pass
         else:
             if (cmd==""):
-                popup("TypeError","450x70",f"Run cannot be empty!")
+                popup("TypeError",f"Run cannot be empty!")
             else:
-                popup("FileNotFound","450x70","File [{}] not found!".format(str(cmd)))
+                popup("FileNotFound","File [{}] not found!".format(str(cmd)))
             return
         nameprogram=str("/".join(cmd.split("\\")).split("/")[-1])
         global allow_program
         if nameprogram.split(".")[-1] in allow_program:
             pass
         else:
-            popup("TypeFileError","450x70","File [{}] not allowed!".format(nameprogram))
+            popup("TypeFileError","File [{}] not allowed!".format(nameprogram))
             return
-        print("Starting ({}) [{}]...".format(str(nameprogram),str(__)))
         global systemdrive,full_path
         if Path(str(systemdrive)+"\\\\Temp").is_dir():
             pass
@@ -152,16 +151,24 @@ if __name__=='__main__':
             _=check_psexec()
             if _==1:
                 return
+            print("Starting ({}) [{}]...".format(str(nameprogram),str(__)))
             temp1 = getoutput('cd \"{2}\\Users\\{1}\" & \"{4}\\psexec.exe\" -u \"{0}\\\\{1}\" -p \"{3}\" \"{2}\\\\Temp\\\\run.bat\"'.format(str(gethostname()),str(__),str(systemdrive),str(globals()["pass{}".format(__)].get()),str(full_path))).split()
             if (str(temp1[-7]+" "+temp1[-6]+" "+temp1[-5]+" "+temp1[-4]+" "+temp1[-3]+" "+temp1[-2]+" "+temp1[-1]) == "The user name or password is incorrect."):
-                popup("PasswordError","450x70","Password error! If your account doesn't have a password, leave it blank!")
+                popup("PasswordError","Password error! If your account doesn't have a password, leave it blank!")
             elif (str(temp1[-3]+" "+temp1[-2]) == "error code") and (str(temp1[-1]) != "0."):
-                popup("ProgramExitCode","450x70","[{}] return error code {}".format(str(nameprogram),str(temp1[-1])))
+                popup("ProgramExitCode","[{}] return error code {}".format(str(nameprogram),str(temp1[-1])))
             elif (str(temp1[-5]+" "+temp1[-4]+" "+temp1[-3]+" "+temp1[-2]+" "+temp1[-1]) == "policy restriction has been enforced."):
-                popup("AccountDisabled","450x70","Account [{}] has been disabled".format(str(__)))
+                popup("AccountDisabled","Account [{}] has been disabled".format(str(__)))
             elif (str(temp1[-7]+" "+temp1[-6]+" "+temp1[-5]+" "+temp1[-4]+" "+temp1[-3]+" "+temp1[-2]+" "+temp1[-1]) == "the requested logon type at this computer."):
-                popup("PermissionDenied","450x70","Account [{}] has not been granted the requested logon type at this computer.".format(str(__)))
+                popup("PermissionDenied","Account [{}] has not been granted the requested logon type at this computer.".format(str(__)))
         return
+
+    def center_screen(w,h,____):
+        ws = ____.winfo_screenwidth()
+        hs = ____.winfo_screenheight()
+        x = (ws/2) - (w/2)
+        y = (hs/2) - (h/2)
+        return '%dx%d+%d+%d' % (w, h, x, y)
 
     def kill_process():
         global pid
@@ -197,7 +204,7 @@ if __name__=='__main__':
             else:
                 temp+="0"
         if (___[str(__)]==str(temp)):
-            popup("NoChange","450x70","There is no change!")
+            popup("NoChange","There is no change!")
         else:
             if (globals()["vactive{}".format(__)].get()):
                 _=Popen('net user {} /active:yes'.format(str(__)),shell=True,stdin=PIPE,stdout=DEVNULL,stderr=DEVNULL)
@@ -209,7 +216,7 @@ if __name__=='__main__':
                 else:
                     _=Popen('net localgroup {} {} /delete'.format(str(z),str(__)),shell=True,stdin=PIPE,stdout=DEVNULL,stderr=DEVNULL)
             ___[str(__)]=str(temp)
-            popup("ApplySettings","450x70","Apply [{}] Done!".format(str(__)))
+            popup("ApplySettings","Apply [{}] Done!".format(str(__)))
         return
 
     def check_psexec():
@@ -217,10 +224,10 @@ if __name__=='__main__':
         if Path(str(full_path)+"\\psexec.exe").is_file():
             h = check_sha256(str(full_path)+"\\psexec.exe")
             if (h.hexdigest()!="08c6e20b1785d4ec4e3f9956931d992377963580b4b2c6579fd9930e08882b1c"):
-                popup("FileError","450x70","File error! File [psexec.exe] corrupted!")
+                popup("FileError","File error! File [psexec.exe] corrupted!")
                 return 1
         else:
-            popup("FileError","450x70","File error! Missing file [psexec.exe]!")
+            popup("FileError","File error! Missing file [psexec.exe]!")
             return 1
         return 0
 
@@ -238,7 +245,7 @@ if __name__=='__main__':
         main1.configure(background=set_bg)
         main1.title('Multi-App Windows | (KhanhNguyen9872) | From Vietnamese with love <3')
         #main1.iconbitmap('khanh.ico')
-        main1.geometry("605x230")
+        main1.geometry(center_screen(605,230,main1))
         main1.resizable(False, False)
         listbox = Listbox(main1)
         listbox.place(x=3,y=0)
@@ -290,7 +297,7 @@ if __name__=='__main__':
             __=list_user[0]
             __=""
         except IndexError:
-            popup("ProgramError","450x70","Program error! Couldn't find any users!")
+            popup("ProgramError","Program error! Couldn't find any users!")
         def onselect(evt="",khanh="",noload=0):
             global __,active,khanhh,temp2
             try:
