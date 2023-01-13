@@ -144,6 +144,10 @@ if __name__=='__main__':
                 popup("PasswordError","450x70","Password error! If your account doesn't have a password, leave it blank!")
             elif (str(temp1[-3]+" "+temp1[-2]) == "error code") and (str(temp1[-1]) != "0."):
                 popup("ProgramExitCode","450x70","[{}] return error code {}".format(str(nameprogram),str(temp1[-1])))
+            elif (str(temp1[-5]+" "+temp1[-4]+" "+temp1[-3]+" "+temp1[-2]+" "+temp1[-1]) == "policy restriction has been enforced."):
+                popup("AccountDisabled","450x70","Account [{}] has been disabled".format(str(__)))
+            elif (str(temp1[-7]+" "+temp1[-6]+" "+temp1[-5]+" "+temp1[-4]+" "+temp1[-3]+" "+temp1[-2]+" "+temp1[-1]) == "the requested logon type at this computer."):
+                popup("PermissionDenied","450x70","Account [{}] has not been granted the requested logon type at this computer.".format(str(__)))
         return
 
     def kill_process():
@@ -195,7 +199,7 @@ if __name__=='__main__':
                 else:
                     _=Popen('net localgroup {} {} /delete'.format(str(z),str(__)),shell=True,stdin=PIPE,stdout=DEVNULL,stderr=DEVNULL)
             ___[str(__)]=str(temp)
-            popup("ApplySettings","450x70","Done!")
+            popup("ApplySettings","450x70","Apply [{}] Done!".format(str(__)))
         return
 
     def tkinter_main():
@@ -230,9 +234,9 @@ if __name__=='__main__':
         group = ['Administrators', 'Users', 'Guests']
         list_user = []
         all_user = getoutput("net user").split()
-        black = ['User', 'accounts', 'for', '\\\\', '-------------------------------------------------------------------------------', 'Administrator', 'DefaultAccount', 'Guest', 'WDAGUtilityAccount', 'The', 'command', 'completed', 'with', 'one', 'or', 'more', 'errors.']
+        system_user = ["Administrator", "DefaultAccount", "WDAGUtilityAccount"]
         for item in all_user:
-            if item in black:
+            if (system("net user \"{0}\" 2>NULL | find /I \"{0}\" > NUL".format(str(item))) == 1):
                 continue
             else:
                 list_user.append(str(item))
@@ -262,7 +266,7 @@ if __name__=='__main__':
                                 globals()["var{}{}".format(item, z)] = BooleanVar(value=False)
                                 temp=0
                             globals()["checkbox{}{}".format(item, z)] = Checkbutton(main1, text=z, variable=globals()["var{}{}".format(item, z)], background=set_bg, foreground=set_fg)
-                            if (str(getlogin())==str(item)):
+                            if (str(getlogin())==str(item)) or item in system_user:
                                 globals()["checkbox{}{}".format(item, z)].config(state=DISABLED)
                             if (temp==1):
                                 ___[str(item)]+="1"
@@ -342,9 +346,12 @@ if __name__=='__main__':
             op_B2 = Button(main1, text = "Del", command = lambda: delete_user(__), background='red', foreground=set_button_fg)
             op_B2.place_forget()
             op_B2.place(x=45,y=170)
-            if (str(getlogin())==str(__)):
-                B22["state"] = "disabled"
+            if (str(getlogin())==str(__)) or __ in system_user:
                 op_B2["state"] = "disabled"
+                if (__ in system_user):
+                    pass
+                else:
+                    B22["state"] = "disabled"
 
         listbox.bind('<<ListboxSelect>>', onselect)
         
