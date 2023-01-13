@@ -1,7 +1,4 @@
 if __name__=='__main__':
-    def clear():
-        system('cls')
-        
     def popup(main,geometry,error):
         global set_bg,set_fg,set_entry_bg,set_button_bg,set_button_fg
         mainerror = Tk()
@@ -85,6 +82,15 @@ if __name__=='__main__':
         except:
             return False
 
+    def check_sha256(file):
+        h = hashlib.sha256()
+        with open(file, 'rb') as f:
+            fb = f.read(65536)
+            while len(fb) > 0:
+                h.update(fb)
+                fb = f.read(65536)
+        return h
+
     def browse_app(En):
         global allow_program
         exee=""
@@ -105,10 +111,14 @@ if __name__=='__main__':
         return
 
     def run_app(__,khanhnguyen9872):
+        if __=="":
+            popup("NoUser","450x70",f"Please choose one user before Run!")
+            return
         try:
             cmd=str(khanhnguyen9872.get())
         except ValueError:
             popup("TypeError","450x70",f"Run cannot be empty!")
+            return
         cmd_path=Path(cmd)
         if cmd_path.is_file():
             pass
@@ -123,7 +133,7 @@ if __name__=='__main__':
         if nameprogram.split(".")[-1] in allow_program:
             pass
         else:
-            popup("TypeFileError","450x70","File [{}] not allowed!")
+            popup("TypeFileError","450x70","File [{}] not allowed!".format(nameprogram))
             return
         print("Starting ({}) [{}]...".format(str(nameprogram),str(__)))
         global systemdrive,full_path
@@ -139,6 +149,9 @@ if __name__=='__main__':
         if (show_cons == 1):
             show_console(__,cmd)
         else:
+            _=check_psexec()
+            if _==1:
+                return
             temp1 = getoutput('cd \"{2}\\Users\\{1}\" & \"{4}\\psexec.exe\" -u \"{0}\\\\{1}\" -p \"{3}\" \"{2}\\\\Temp\\\\run.bat\"'.format(str(gethostname()),str(__),str(systemdrive),str(globals()["pass{}".format(__)].get()),str(full_path))).split()
             if (str(temp1[-7]+" "+temp1[-6]+" "+temp1[-5]+" "+temp1[-4]+" "+temp1[-3]+" "+temp1[-2]+" "+temp1[-1]) == "The user name or password is incorrect."):
                 popup("PasswordError","450x70","Password error! If your account doesn't have a password, leave it blank!")
@@ -158,9 +171,6 @@ if __name__=='__main__':
         else:
             kill(pid, signal.SIGABRT)
         exit()
-
-    def pause():
-        system("pause")
 
     def show_console(__,cmd):
         def run_cmd(__,cmd):
@@ -202,20 +212,23 @@ if __name__=='__main__':
             popup("ApplySettings","450x70","Apply [{}] Done!".format(str(__)))
         return
 
-    def tkinter_main():
-        global set_bg,set_fg,set_entry_bg,set_button_bg,set_button_fg,__,___,active,main1,systemdrive,hide,onselect,full_path
+    def check_psexec():
+        global full_path
         if Path(str(full_path)+"\\psexec.exe").is_file():
-            h = hashlib.sha256()
-            with open(str(full_path)+"\\psexec.exe", 'rb') as f:
-                fb = f.read(65536)
-                while len(fb) > 0:
-                    h.update(fb)
-                    fb = f.read(65536)
+            h = check_sha256(str(full_path)+"\\psexec.exe")
             if (h.hexdigest()!="08c6e20b1785d4ec4e3f9956931d992377963580b4b2c6579fd9930e08882b1c"):
                 popup("FileError","450x70","File error! File [psexec.exe] corrupted!")
-                return
+                return 1
         else:
             popup("FileError","450x70","File error! Missing file [psexec.exe]!")
+            return 1
+        return 0
+
+    def tkinter_main():
+        global set_bg,set_fg,set_entry_bg,set_button_bg,set_button_fg,__,___,active,main1,systemdrive,hide,onselect,full_path,temp2
+        temp2=0
+        _=check_psexec()
+        if _==1:
             return
         if Path(str(systemdrive)+"\\Temp").is_dir():
             pass
@@ -225,7 +238,7 @@ if __name__=='__main__':
         main1.configure(background=set_bg)
         main1.title('Multi-App Windows | (KhanhNguyen9872) | From Vietnamese with love <3')
         #main1.iconbitmap('khanh.ico')
-        main1.geometry("600x230")
+        main1.geometry("605x230")
         main1.resizable(False, False)
         listbox = Listbox(main1)
         listbox.place(x=3,y=0)
@@ -275,10 +288,11 @@ if __name__=='__main__':
                         break
         try:
             __=list_user[0]
+            __=""
         except IndexError:
             popup("ProgramError","450x70","Program error! Couldn't find any users!")
-        def onselect(evt="",khanh=""):
-            global __,active,khanhh
+        def onselect(evt="",khanh="",noload=0):
+            global __,active,khanhh,temp2
             try:
                 w = evt.widget
                 index = int(w.curselection()[0])
@@ -290,38 +304,65 @@ if __name__=='__main__':
                     value=str(khanh)
             khanhh=str(value)
             __=value
-            
-            #user
-            NAME_USER_L = Label(main1, text="                                                                                                                                                          ", background=set_bg, foreground=set_bg)
-            NAME_USER_L.place_forget()
-            NAME_USER_L.place(x=130,y=0)
-            NAME_USER_L = Label(main1, text="User: {}".format(str(__)),font=('Arial', 10, 'bold'), background=set_bg, foreground=set_fg)
-            NAME_USER_L.place_forget()
-            NAME_USER_L.place(x=130,y=0)
-            
-            #group
-            L22 = Label(main1, text="Group:", background=set_bg, foreground=set_fg)
-            L22.place_forget()
-            L22.place(x=130,y=22)
-            x=0
-            for y in group:
-                for item in list_user:
-                    globals()["checkbox{}{}".format(item, y)].place_forget()
-                globals()["checkbox{}{}".format(value, y)].place(x=175+x,y=20)
-                x+=120
-                
-            #active
-            L23 = Label(main1, text="Active:", background=set_bg, foreground=set_fg)
-            L23.place_forget()
-            L23.place(x=130,y=44)
-            for item in list_user:
-                globals()["active{}".format(item)].place_forget()
-            globals()["active{}".format(__)].place(x=175,y=42)
+            if (noload==0):
+                if (temp2==0):
+                    #group
+                    L22 = Label(main1, text="Group:", background=set_bg, foreground=set_fg)
+                    L22.place_forget()
+                    L22.place(x=130,y=22)
 
-            #password
-            L24 = Label(main1, text="Password:", font=('Arial', 10, 'bold'), background=set_bg, foreground=set_fg)
-            L24.place_forget()
-            L24.place(x=130,y=145)
+                    #active
+                    L23 = Label(main1, text="Active:", background=set_bg, foreground=set_fg)
+                    L23.place_forget()
+                    L23.place(x=130,y=44)
+
+                    #password
+                    L24 = Label(main1, text="Password:", font=('Arial', 10, 'bold'), background=set_bg, foreground=set_fg)
+                    L24.place_forget()
+                    L24.place(x=130,y=145)
+
+                    #warning
+                    L24 = Label(main1, text="If the app requires Administrator, please tick Administrators for this user before run", font=('Arial', 8, 'bold'), background=set_bg, foreground='red')
+                    L24.place_forget()
+                    L24.place(x=128,y=180)
+                    temp2=1
+                #user
+                NAME_USER_L = Label(main1, text="                                                                                                                                                          ", background=set_bg, foreground=set_bg)
+                NAME_USER_L.place_forget()
+                NAME_USER_L.place(x=130,y=0)
+                NAME_USER_L = Label(main1, text="User: {}".format(str(__)),font=('Arial', 10, 'bold'), background=set_bg, foreground=set_fg)
+                NAME_USER_L.place_forget()
+                NAME_USER_L.place(x=130,y=0)
+                
+                #group
+                x=0
+                for y in group:
+                    for item in list_user:
+                        globals()["checkbox{}{}".format(item, y)].place_forget()
+                    globals()["checkbox{}{}".format(value, y)].place(x=175+x,y=20)
+                    x+=120
+                
+                #active
+                for item in list_user:
+                    globals()["active{}".format(item)].place_forget()
+                globals()["active{}".format(__)].place(x=175,y=42)
+
+                # apply
+                B22 = Button(main1, text = "Apply", command = lambda: apply_settings(__,group), background=set_button_bg, foreground=set_button_fg)
+                B22.place_forget()
+                B22.place(x=550,y=150)
+
+                # below list user
+                op_B2 = Button(main1, text = "Del", command = lambda: delete_user(__), background='red', foreground=set_button_fg)
+                op_B2.place_forget()
+                op_B2.place(x=45,y=170)
+                if (str(getlogin())==str(__)) or __ in system_user:
+                    op_B2["state"] = "disabled"
+                    if (__ in system_user):
+                        pass
+                    else:
+                        B22["state"] = "disabled"
+
             for item in list_user:
                 globals()["passw{}".format(item)].place_forget()
             if hide==0:
@@ -329,29 +370,13 @@ if __name__=='__main__':
             else:
                 globals()["passw{}".format(__)].config(show='#')
             globals()["passw{}".format(__)].place(x=205,y=145)
-            B23 = Button(main1, command = lambda: exec("global hide,khanhh\nif hide==0:\n    hide=1\nelse:\n    hide=0\nonselect(\"\",khanhh)"), background=set_button_bg, foreground=set_button_fg)
+            B23 = Button(main1, command = lambda: exec("global hide,khanhh\nif hide==0:\n    hide=1\nelse:\n    hide=0\nonselect(\"\",khanhh,1)"), background=set_button_bg, foreground=set_button_fg)
             if hide==0:
                 B23.config(text="Hide", width=10)
             else:
                 B23.config(text="Show", width=10)
             B23.place_forget()
             B23.place(x=400,y=142)
-            
-            # apply
-            B22 = Button(main1, text = "Apply", command = lambda: apply_settings(__,group), background=set_button_bg, foreground=set_button_fg)
-            B22.place_forget()
-            B22.place(x=550,y=150)
-
-            # below list user
-            op_B2 = Button(main1, text = "Del", command = lambda: delete_user(__), background='red', foreground=set_button_fg)
-            op_B2.place_forget()
-            op_B2.place(x=45,y=170)
-            if (str(getlogin())==str(__)) or __ in system_user:
-                op_B2["state"] = "disabled"
-                if (__ in system_user):
-                    pass
-                else:
-                    B22["state"] = "disabled"
 
         listbox.bind('<<ListboxSelect>>', onselect)
         
