@@ -460,7 +460,6 @@ if __name__=='__main__':
         DEVNULL = open(devnull, 'wb')
     global set_bg,set_fg,set_entry_bg,set_button_bg,set_button_fg,__,___,pid,active,systemdrive,hide,full_path,allow_program
     full_path=str("\\".join(str("/".join(str(getcwd()).split("\\"))).split("/"))+"\\core")
-    print(full_path)
     pid = getpid()
     systemdrive = getenv("SystemDrive")
     hide=1
