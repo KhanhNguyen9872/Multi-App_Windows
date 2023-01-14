@@ -120,13 +120,16 @@ if __name__=='__main__':
             popup("TypeError",f"Run cannot be empty!")
             return
         cmd_path=Path(cmd)
-        if cmd_path.is_file():
+        if (cmd==""):
+            popup("TypeError",f"Run cannot be empty!")
+            return
+        elif cmd_path.is_file():
             pass
+        elif cmd_path.is_dir():
+            popup("NotAFile","File required! Not a folder [{}]!".format(str(cmd)))
+            return
         else:
-            if (cmd==""):
-                popup("TypeError",f"Run cannot be empty!")
-            else:
-                popup("FileNotFound","File [{}] not found!".format(str(cmd)))
+            popup("FileNotFound","File [{}] not found!".format(str(cmd)))
             return
         nameprogram=str("/".join(cmd.split("\\")).split("/")[-1])
         global allow_program
@@ -139,11 +142,12 @@ if __name__=='__main__':
         if Path(str(systemdrive)+"\\\\Temp").is_dir():
             pass
         else:
-            _=Popen("mkdir {}\\\\Temp".format(str(systemdrive)),shell=True,stdin=PIPE,stdout=DEVNULL,stderr=DEVNULL)
+            _=Popen("\"{0}\\\\mkdir.exe\" \"{1}\\\\Temp\"".format(str(full_path),str(systemdrive)),shell=True,stdin=PIPE,stdout=DEVNULL,stderr=DEVNULL)
             sleep(1)
         cmd = str(path.realpath(cmd))
-        with open(str(systemdrive)+"\\\\Temp\\\\run.bat","w") as f:
-            f.write("@echo off\nstart \"\" \""+str(cmd).replace("/","\\")+"\"")
+        rand = str(random_str())
+        with open(str(systemdrive)+"\\\\Temp\\\\{}.bat".format(str(rand)),"w") as f:
+            f.write("@echo off\ncd \"{1}\\Users\\{0}\" >NUL 2>&1\nstart \"{2} [{0}] | KhanhNguyen9872\" \"".format(str(__),str(systemdrive),str(nameprogram))+str(cmd).replace("/","\\")+"\"")
         show_cons = 0
         if (show_cons == 1):
             show_console(__,cmd)
@@ -152,7 +156,7 @@ if __name__=='__main__':
             if _==1:
                 return
             print("Starting ({}) [{}]...".format(str(nameprogram),str(__)))
-            temp1 = getoutput('cd \"{2}\\Users\\{1}\" & \"{4}\\psexec.exe\" -u \"{0}\\\\{1}\" -p \"{3}\" \"{2}\\\\Temp\\\\run.bat\"'.format(str(gethostname()),str(__),str(systemdrive),str(globals()["pass{}".format(__)].get()),str(full_path))).split()
+            temp1 = getoutput('\"{4}\\psexec.exe\" -u \"{0}\\\\{1}\" -p \"{3}\" \"{2}\\\\Temp\\\\{5}.bat\"'.format(str(gethostname()),str(__),str(systemdrive),str(globals()["pass{}".format(__)].get()),str(full_path),str(rand))).split()
             if (str(temp1[-7]+" "+temp1[-6]+" "+temp1[-5]+" "+temp1[-4]+" "+temp1[-3]+" "+temp1[-2]+" "+temp1[-1]) == "The user name or password is incorrect."):
                 popup("PasswordError","Password error! If your account doesn't have a password, leave it blank!")
             elif (str(temp1[-3]+" "+temp1[-2]) == "error code") and (str(temp1[-1]) != "0."):
@@ -161,6 +165,7 @@ if __name__=='__main__':
                 popup("AccountDisabled","Account [{}] has been disabled".format(str(__)))
             elif (str(temp1[-7]+" "+temp1[-6]+" "+temp1[-5]+" "+temp1[-4]+" "+temp1[-3]+" "+temp1[-2]+" "+temp1[-1]) == "the requested logon type at this computer."):
                 popup("PermissionDenied","Account [{}] has not been granted the requested logon type at this computer.".format(str(__)))
+            _=Popen("\"{0}\\rm.exe\" \"{1}\\\\Temp\\\\{2}.bat\"".format(str(full_path),str(systemdrive),str(rand)),shell=True,stdin=PIPE,stdout=DEVNULL,stderr=DEVNULL)
         return
 
     def center_screen(w,h,____):
@@ -169,6 +174,9 @@ if __name__=='__main__':
         x = (ws/2) - (w/2)
         y = (hs/2) - (h/2)
         return '%dx%d+%d+%d' % (w, h, x, y)
+
+    def random_str(length=10):
+        return "".join([choice('qwertyuiopasdfghjklzxcvbnm1234567890') for _ in range(length)])
 
     def kill_process():
         global pid
@@ -221,14 +229,31 @@ if __name__=='__main__':
 
     def check_psexec():
         global full_path
-        if Path(str(full_path)+"\\psexec.exe").is_file():
-            h = check_sha256(str(full_path)+"\\psexec.exe")
-            if (h.hexdigest()!="08c6e20b1785d4ec4e3f9956931d992377963580b4b2c6579fd9930e08882b1c"):
-                popup("FileError","File error! File [psexec.exe] corrupted!")
+        file_required = [
+        "psexec.exe",
+        "mkdir.exe",
+        "rm.exe",
+        "rmdir.exe",
+        "libiconv2.dll",
+        "libintl3.dll",
+        ]
+        sha256_file = [
+        "08c6e20b1785d4ec4e3f9956931d992377963580b4b2c6579fd9930e08882b1c",
+        "6914a50f48c1503411befbdabc74d28bdb5d48548b3941b090745e96b16df5f2",
+        "feb9517d0b478e62cf6f487bf947956293125b35ef1aa300761a21c2b686832f",
+        "38f1031d69edbbfe3882a3c6d8f5b23fbfd3222015e120bcd46f982e0b49a0ff",
+        "27e0a08c15421a3a5c2c5d359a9f6577fc79b35c4310604518d5f967ce532681",
+        "f48ce1866602b114e653c876334b771107559acf1c685373d2305034613958f0",
+        ]
+        for file in range(0,len(file_required),1):
+            if Path(str(full_path)+"\\{}".format(str(file_required[file]))).is_file():
+                h = check_sha256(str(full_path)+"\\{}".format(str(file_required[file])))
+                if (h.hexdigest()!=sha256_file[file]):
+                    popup("FileError","File error! File [{}] corrupted!".format(str(file_required[file])))
+                    return 1
+            else:
+                popup("FileError","File error! Missing file [{}]!".format(str(file_required[file])))
                 return 1
-        else:
-            popup("FileError","File error! Missing file [psexec.exe]!")
-            return 1
         return 0
 
     def tkinter_main():
@@ -240,7 +265,7 @@ if __name__=='__main__':
         if Path(str(systemdrive)+"\\Temp").is_dir():
             pass
         else:
-            _=Popen("mkdir {}\\Temp".format(str(systemdrive)),shell=True,stdin=PIPE,stdout=DEVNULL,stderr=DEVNULL)
+            _=Popen("\"{0}\\\\mkdir.exe\" \"{1}\\Temp\"".format(str(full_path),str(systemdrive)),shell=True,stdin=PIPE,stdout=DEVNULL,stderr=DEVNULL)
         main1 = Tk()
         main1.configure(background=set_bg)
         main1.title('Multi-App Windows | (KhanhNguyen9872) | From Vietnamese with love <3')
@@ -396,19 +421,15 @@ if __name__=='__main__':
         op_B3.place(x=80,y=170)
         
         #below program
-        L1 = Label(mainbottom, text="Run:")
-        L1.pack(side = LEFT)
-        L2 = Label(mainbottom, text="https://fb.me/khanh10a1")
-        L2.pack(side = RIGHT)
+        Label(mainbottom, text="Run:").pack(side = LEFT)
+        Label(mainbottom, text="https://fb.me/khanh10a1").pack(side = RIGHT)
         E1 = Entry(mainbottom, bd=1, width=56)
         E1.insert(END, f"{systemdrive}\\Windows\\system32\\cmd.exe")
         E1.pack(side = LEFT)
         main1.bind('<Return>', lambda cmd: run_app(__,E1))
         main1.bind('<F5>', lambda cmd: reload_main(main1))
-        B1 = Button(mainbottom, text = "Browse", command = lambda: browse_app(E1), background='green', foreground=set_button_fg)
-        B1.pack(side=LEFT)
-        B = Button(mainbottom, text = "RUN", command = lambda: Thread(target=run_app, args=(__,E1)).start(), background='red', foreground=set_button_fg)
-        B.pack(side=LEFT)
+        Button(mainbottom, text = "Browse", command = lambda: browse_app(E1), background='green', foreground=set_button_fg).pack(side=LEFT)
+        Button(mainbottom, text = "RUN", command = lambda: Thread(target=run_app, args=(__,E1)).start(), background='red', foreground=set_button_fg).pack(side=LEFT)
         main1.mainloop()
         
     # main
@@ -427,6 +448,7 @@ if __name__=='__main__':
     from socket import gethostname
     from tkinter import *
     from tkinter import filedialog
+    from random import choice
     import signal, hashlib
     try:
         from subprocess import DEVNULL
@@ -436,7 +458,7 @@ if __name__=='__main__':
     global set_bg,set_fg,set_entry_bg,set_button_bg,set_button_fg,__,___,pid,active,systemdrive,hide,full_path,allow_program
     full_path=str("/".join(str(__file__).split("\\"))).split("/")
     del full_path[-1]
-    full_path=str("\\".join(full_path))
+    full_path=str("\\".join(full_path)+"\\core")
     pid = getpid()
     systemdrive = getenv("SystemDrive")
     hide=1
