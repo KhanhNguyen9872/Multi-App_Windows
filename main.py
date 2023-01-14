@@ -1,41 +1,28 @@
 if __name__=='__main__':
-    def popup(main,error):
-        global set_bg,set_fg,set_entry_bg,set_button_bg,set_button_fg
+    def popup(main,error,type_pop=1,exec_pop=""):
+        global set_bg,set_fg,set_entry_bg,set_button_bg,set_button_fg,mainerror
         mainerror = Tk()
-        mainerror.title(f"{main} | Python (KhanhNguyen9872)")
+        mainerror.title("{} | Python (KhanhNguyen9872)".format(str(main)))
         #mainerror.iconbitmap('khanh.ico')
         mainerror.configure(background=set_bg)
         mainerror.geometry(center_screen(450,70,mainerror))
         mainerror.resizable(False, False)
-        texterror = Text(mainerror, background=set_bg, foreground=set_fg,font=("Arial", 12, 'bold'))
-        texterror.insert(INSERT, f"{error}")
+        texterror = Text(mainerror, background=set_bg, foreground=set_fg,font=("Arial", 10, 'bold'))
+        texterror.insert(INSERT, str(error))
         texterror.pack()
         btn = Button(mainerror, text = 'OK', command = mainerror.destroy, height = 0, width = 10)
         btn.place(x=365, y=40)
+        if type_pop==2:
+            btn.config(text = "NO")
+            btn1 = Button(mainerror, text = 'YES', command = lambda : exec(str(exec_pop)), height = 0, width = 10)
+            btn1.place(x=280, y=40)
+        mainerror.protocol("WM_DELETE_WINDOW", mainerror.destroy)
         mainerror.mainloop()
         
     def reload_main(main):
         main.destroy()
         tkinter_main()
         return
-
-    def delete_user(__):
-        global set_bg,set_fg,set_entry_bg,set_button_bg,set_button_fg
-        global mainerror
-        mainerror = Tk()
-        mainerror.title("DeleteUser | Python (KhanhNguyen9872)")
-        #mainerror.iconbitmap('khanh.ico')
-        mainerror.configure(background=set_bg)
-        mainerror.geometry(center_screen(450,70,mainerror))
-        mainerror.resizable(False, False)
-        texterror = Text(mainerror, background=set_bg, foreground=set_fg,font=("Arial", 12, 'bold'))
-        texterror.insert(INSERT, f"Do you want to delete [{__}]?")
-        texterror.pack()
-        btn = Button(mainerror, text = 'NO', command = mainerror.destroy, height = 0, width = 10)
-        btn.place(x=365, y=40)
-        btn1 = Button(mainerror, text = 'YES', command = lambda : exec("_=Popen(\"net user \\\"{0}\\\" /delete && rmdir /q /s \\\"%systemdrive%\\\\Users\\\\{0}\\\"\",shell=True,stdin=PIPE,stdout=DEVNULL,stderr=DEVNULL); global mainerror,main1; mainerror.destroy(); main1.destroy(); tkinter_main()".format(str(__))), height = 0, width = 10)
-        btn1.place(x=280, y=40)
-        mainerror.mainloop()
 
     def add_passw(E_USER,E_PASS):
         sleep(0.5)
@@ -76,6 +63,7 @@ if __name__=='__main__':
         E_RPASS.pack(padx=0, pady=20)
         Button(login_screen, text = "Create", command = lambda: create(login_screen,E_USER.get(),E_PASS.get(),E_RPASS.get()), background='red', width=10, height=1, foreground=set_button_fg).place(x=105,y=170)
         login_screen.bind('<Return>', lambda cmd: create(login_screen,E_USER.get(),E_PASS.get(),E_RPASS.get()))
+        login_screen.protocol("WM_DELETE_WINDOW", login_screen.destroy)
         login_screen.mainloop()
         return
 
@@ -136,7 +124,8 @@ if __name__=='__main__':
             return
         nameprogram=str("/".join(cmd.split("\\")).split("/")[-1])
         global allow_program
-        if nameprogram.split(".")[-1] in allow_program:
+        type_exec = str(nameprogram.split(".")[-1])
+        if type_exec in allow_program:
             pass
         else:
             popup("TypeFileError","File [{}] not allowed!".format(nameprogram))
@@ -150,25 +139,33 @@ if __name__=='__main__':
         cmd = str(path.realpath(cmd))
         rand = str(random_str())
         with open(str(systemdrive)+"\\\\Temp\\\\{}.bat".format(str(rand)),"w") as f:
-            f.write("@echo off\ncd \"{1}\\Users\\{0}\" >NUL 2>&1\nstart \"{2} [{0}] | KhanhNguyen9872\" \"".format(str(__),str(systemdrive),str(nameprogram))+str(cmd).replace("/","\\")+"\"")
-        show_cons = 0
-        if (show_cons == 1):
-            show_console(__,cmd)
-        else:
-            _=check_psexec()
-            if _==1:
-                return
-            print("Starting ({}) [{}]...".format(str(nameprogram),str(__)))
-            temp1 = getoutput('\"{4}\\psexec.exe\" -u \"{0}\\\\{1}\" -p \"{3}\" \"{2}\\\\Temp\\\\{5}.bat\"'.format(str(gethostname()),str(__),str(systemdrive),str(globals()["pass{}".format(__)].get()),str(full_path),str(rand))).split()
-            if (str(temp1[-7]+" "+temp1[-6]+" "+temp1[-5]+" "+temp1[-4]+" "+temp1[-3]+" "+temp1[-2]+" "+temp1[-1]) == "The user name or password is incorrect."):
-                popup("PasswordError","Password error! If your account doesn't have a password, leave it blank!")
-            elif (str(temp1[-3]+" "+temp1[-2]) == "error code") and (str(temp1[-1]) != "0."):
-                popup("ProgramExitCode","[{}] return error code {}".format(str(nameprogram),str(temp1[-1])))
-            elif (str(temp1[-5]+" "+temp1[-4]+" "+temp1[-3]+" "+temp1[-2]+" "+temp1[-1]) == "policy restriction has been enforced."):
-                popup("AccountDisabled","Account [{}] has been disabled".format(str(__)))
-            elif (str(temp1[-7]+" "+temp1[-6]+" "+temp1[-5]+" "+temp1[-4]+" "+temp1[-3]+" "+temp1[-2]+" "+temp1[-1]) == "the requested logon type at this computer."):
-                popup("PermissionDenied","Account [{}] has not been granted the requested logon type at this computer.".format(str(__)))
-            _=Popen("\"{0}\\rm.exe\" \"{1}\\\\Temp\\\\{2}.bat\"".format(str(full_path),str(systemdrive),str(rand)),shell=True,stdin=PIPE,stdout=DEVNULL,stderr=DEVNULL)
+            f.write("@echo off\n")
+            if type_exec == "exe" and nameprogram != "cmd.exe":
+                cmd_path = str(cmd).replace("/","\\").split("\\")
+                del cmd_path[-1]
+                cmd_path = str("\\".join(cmd_path))
+                f.write("cd \"{0}\" >NUL 2>&1\n".format(str(cmd_path)))
+            else:
+                f.write("cd \"{0}\\Users\\{1}\" >NUL 2>&1\n".format(str(systemdrive),str(__)))
+            f.write("start \"{0} [{1}] | KhanhNguyen9872\" \"{2}\"".format(str(nameprogram),str(__),str(cmd).replace("/","\\")))
+        # show_cons = 0
+        # if (show_cons == 1):
+        #     show_console(__,cmd)
+        # else:
+        _=check_psexec()
+        if _==1:
+            return
+        print("Starting ({}) [{}]...".format(str(nameprogram),str(__)))
+        temp1 = getoutput('\"{4}\\psexec.exe\" -u \"{0}\\\\{1}\" -p \"{3}\" \"{2}\\\\Temp\\\\{5}.bat\"'.format(str(gethostname()),str(__),str(systemdrive),str(globals()["pass{}".format(__)].get()),str(full_path),str(rand))).split()
+        if (str(temp1[-7]+" "+temp1[-6]+" "+temp1[-5]+" "+temp1[-4]+" "+temp1[-3]+" "+temp1[-2]+" "+temp1[-1]) == "The user name or password is incorrect."):
+            popup("PasswordError","Password error! If your User doesn't have a password, leave it blank!")
+        elif (str(temp1[-3]+" "+temp1[-2]) == "error code") and (str(temp1[-1]) != "0."):
+            popup("ProgramExitCode","[{}] return error code {}".format(str(nameprogram),str(temp1[-1])))
+        elif (str(temp1[-5]+" "+temp1[-4]+" "+temp1[-3]+" "+temp1[-2]+" "+temp1[-1]) == "policy restriction has been enforced."):
+            popup("UserDisabled","User [{}] has been disabled".format(str(__)))
+        elif (str(temp1[-7]+" "+temp1[-6]+" "+temp1[-5]+" "+temp1[-4]+" "+temp1[-3]+" "+temp1[-2]+" "+temp1[-1]) == "the requested logon type at this computer."):
+            popup("PermissionDenied","User [{}] has not been granted the requested logon type at this computer.".format(str(__)))
+        _=Popen("\"{0}\\rm.exe\" \"{1}\\\\Temp\\\\{2}.bat\"".format(str(full_path),str(systemdrive),str(rand)),shell=True,stdin=PIPE,stdout=DEVNULL,stderr=DEVNULL)
         return
 
     def center_screen(w,h,____):
@@ -190,17 +187,17 @@ if __name__=='__main__':
             kill(pid, signal.SIGABRT)
         exit()
 
-    def show_console(__,cmd):
-        def run_cmd(__,cmd):
-            command = cmd.get('1.0', 'end').split('\n')[-2]
-            if command == 'exit':
-                exit()
-            cmd.insert('end', f'\n{getoutput(command)}')
-        root = Tk()
-        cmd = Text(root)
-        cmd.pack()
-        cmd.bind('<Return>', lambda aa : run_cmd(__,cmd))
-        root.mainloop()
+    # def show_console(__,cmd):
+    #     def run_cmd(__,cmd):
+    #         command = cmd.get('1.0', 'end').split('\n')[-2]
+    #         if command == 'exit':
+    #             exit()
+    #         cmd.insert('end', f'\n{getoutput(command)}')
+    #     root = Tk()
+    #     cmd = Text(root)
+    #     cmd.pack()
+    #     cmd.bind('<Return>', lambda aa : run_cmd(__,cmd))
+    #     root.mainloop()
 
     def apply_settings(__,group):
         global ___,active
@@ -388,7 +385,7 @@ if __name__=='__main__':
                 B22.place(x=550,y=150)
 
                 # below list user
-                op_B2 = Button(main1, text = "Del", command = lambda: delete_user(__), background='red', foreground=set_button_fg)
+                op_B2 = Button(main1, text = "Del", command = lambda: popup("DeleteUser",f"Do you want to delete [{__}]?",2,"_=Popen(\"net user \\\"{0}\\\" /delete && rmdir /q /s \\\"%systemdrive%\\\\Users\\\\{0}\\\"\",shell=True,stdin=PIPE,stdout=DEVNULL,stderr=DEVNULL); global mainerror,main1; mainerror.destroy(); main1.destroy(); tkinter_main()".format(str(__))), background='red', foreground=set_button_fg)
                 op_B2.place_forget()
                 op_B2.place(x=45,y=170)
                 if (str(getlogin())==str(__)) or __ in system_user:
@@ -433,6 +430,7 @@ if __name__=='__main__':
         main1.bind('<F5>', lambda cmd: reload_main(main1))
         Button(mainbottom, text = "Browse", command = lambda: browse_app(E1), background='green', foreground=set_button_fg).pack(side=LEFT)
         Button(mainbottom, text = "RUN", command = lambda: Thread(target=run_app, args=(__,E1)).start(), background='red', foreground=set_button_fg).pack(side=LEFT)
+        main1.protocol("WM_DELETE_WINDOW", lambda: popup("ExitProgram",f"Do you want to exit?",2,"kill_process()"))
         main1.mainloop()
         
     # main
