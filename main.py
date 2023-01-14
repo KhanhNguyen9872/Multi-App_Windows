@@ -445,7 +445,7 @@ if __name__=='__main__':
         exit()
     from subprocess import Popen,PIPE,getoutput
     from threading import Thread
-    from os import system, getpid, kill, getlogin, getenv, path
+    from os import system, getpid, kill, getlogin, getenv, path, getcwd
     from pathlib import Path
     from time import sleep
     from socket import gethostname
@@ -459,9 +459,8 @@ if __name__=='__main__':
         from os import devnull
         DEVNULL = open(devnull, 'wb')
     global set_bg,set_fg,set_entry_bg,set_button_bg,set_button_fg,__,___,pid,active,systemdrive,hide,full_path,allow_program
-    full_path=str("/".join(str(__file__).split("\\"))).split("/")
-    del full_path[-1]
-    full_path=str("\\".join(full_path)+"\\core")
+    full_path=str("\\".join(str("/".join(str(getcwd()).split("\\"))).split("/"))+"\\core")
+    print(full_path)
     pid = getpid()
     systemdrive = getenv("SystemDrive")
     hide=1
