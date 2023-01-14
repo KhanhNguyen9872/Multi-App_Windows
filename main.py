@@ -73,6 +73,7 @@ if __name__=='__main__':
         E_RPASS = Entry(login_screen,show="#", bd=1)
         E_RPASS.pack(padx=0, pady=20)
         Button(login_screen, text = "Create", command = lambda: create(login_screen,E_USER.get(),E_PASS.get(),E_RPASS.get()), background='red', width=10, height=1, foreground=set_button_fg).place(x=105,y=170)
+        login_screen.bind('<Return>', lambda cmd: create(login_screen,E_USER.get(),E_PASS.get(),E_RPASS.get()))
         login_screen.mainloop()
         return
 
