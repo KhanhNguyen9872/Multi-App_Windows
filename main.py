@@ -43,9 +43,11 @@ if __name__=='__main__':
         return
 
     def create(main,E_USER,E_PASS,E_RPASS):
-        global main1
+        global main1,list_user
         if E_USER=="":
             popup("TypeError","Username must not empty!")
+        elif E_USER in list_user:
+            popup("UserExists","Username [{}] already exists!".format(str(E_USER)))
         elif E_PASS==E_RPASS:
             _=Popen('reg.exe add "HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Lsa" /v "LimitBlankPasswordUse" /t REG_DWORD /d "0" /f',shell=True,stdin=PIPE,stdout=DEVNULL,stderr=DEVNULL)
             _=Popen('net user | find /i "{0}" || net user {0} /add /fullname:"{0}" /active:yes'.format(str(E_USER)),shell=True,stdin=PIPE,stdout=DEVNULL,stderr=DEVNULL)
@@ -258,7 +260,7 @@ if __name__=='__main__':
         return 0
 
     def tkinter_main():
-        global set_bg,set_fg,set_entry_bg,set_button_bg,set_button_fg,__,___,active,main1,systemdrive,hide,onselect,full_path,temp2
+        global set_bg,set_fg,set_entry_bg,set_button_bg,set_button_fg,__,___,active,main1,systemdrive,hide,onselect,full_path,temp2,list_user
         temp2=0
         _=check_psexec()
         if _==1:
