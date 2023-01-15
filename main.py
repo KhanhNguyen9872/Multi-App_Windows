@@ -19,6 +19,7 @@ if __name__=='__main__':
                 btn1 = Button(mainerror, text = 'YES', command = lambda : exec(str(exec_pop)), height = 0, width = 10)
                 btn1.place(x=280, y=40)
             mainerror.protocol("WM_DELETE_WINDOW", mainerror.destroy)
+            texterror.config(state=DISABLED)
             mainerror.mainloop()
             
         def reload_main(main):
