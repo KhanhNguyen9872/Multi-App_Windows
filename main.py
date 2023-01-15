@@ -2,7 +2,8 @@ if __name__=='__main__':
     from os import name
     if (name=="nt"):
         def popup(main,error,type_pop=1,exec_pop=""):
-            global set_bg,set_fg,set_entry_bg,set_button_bg,set_button_fg,mainerror
+            global set_bg,set_fg,set_entry_bg,set_button_bg,set_button_fg,mainerror,main1
+            main1.attributes('-disabled', True)
             mainerror = Tk()
             mainerror.title("{} | Python (KhanhNguyen9872)".format(str(main)))
             #mainerror.iconbitmap('khanh.ico')
@@ -12,13 +13,13 @@ if __name__=='__main__':
             texterror = Text(mainerror, background=set_bg, foreground=set_fg,font=("Arial", 10, 'bold'))
             texterror.insert(INSERT, str(error))
             texterror.pack()
-            btn = Button(mainerror, text = 'OK', command = mainerror.destroy, height = 0, width = 10)
+            btn = Button(mainerror, text = 'OK', command = lambda : exec("global mainerror,main1; mainerror.destroy(); main1.attributes('-disabled', False)"), height = 0, width = 10)
             btn.place(x=365, y=40)
             if type_pop==2:
                 btn.config(text = "NO")
                 btn1 = Button(mainerror, text = 'YES', command = lambda : exec(str(exec_pop)), height = 0, width = 10)
                 btn1.place(x=280, y=40)
-            mainerror.protocol("WM_DELETE_WINDOW", mainerror.destroy)
+            mainerror.protocol("WM_DELETE_WINDOW", lambda : exec("global mainerror, main1; mainerror.destroy(); main1.attributes('-disabled', False)"))
             texterror.config(state=DISABLED)
             mainerror.mainloop()
             
@@ -55,19 +56,52 @@ if __name__=='__main__':
             login_screen.geometry("300x220")
             login_screen.resizable(False, False)
             Label(login_screen,width="300", text="Please enter details below", bg="orange",fg="white").pack()
-            Label(login_screen, text="Username").place(x=15,y=40)
+            Label(login_screen, text="Username:").place(x=15,y=40)
             E_USER = Entry(login_screen, bd=1)
             E_USER.pack(padx=0, pady=20)
-            Label(login_screen, text="Password").place(x=15,y=80)
+            Label(login_screen, text="Password:").place(x=15,y=80)
             E_PASS = Entry(login_screen,show="#", bd=1)
             E_PASS.pack(padx=20, pady=0)
-            Label(login_screen, text="Repassword").place(x=15,y=120)
+            Label(login_screen, text="Repassword:").place(x=15,y=120)
             E_RPASS = Entry(login_screen,show="#", bd=1)
             E_RPASS.pack(padx=0, pady=20)
             Button(login_screen, text = "Create", command = lambda: create(login_screen,E_USER.get(),E_PASS.get(),E_RPASS.get()), background='red', width=10, height=1, foreground=set_button_fg).place(x=105,y=170)
             login_screen.bind('<Return>', lambda cmd: create(login_screen,E_USER.get(),E_PASS.get(),E_RPASS.get()))
             login_screen.protocol("WM_DELETE_WINDOW", login_screen.destroy)
             login_screen.mainloop()
+            return
+
+        def change_pass(__):
+            change_pass_t = Tk()
+            change_pass_t.title("Change Password User")
+            change_pass_t.geometry("300x220")
+            change_pass_t.resizable(False, False)
+            Label(change_pass_t,width="300", text="Please enter details below", bg="orange",fg="white").pack()
+            Label(change_pass_t, text="Username: {}".format(str(__)), font=('Arial', 10, 'bold')).place(x=15,y=40)
+            Label(change_pass_t, text="Password:").place(x=15,y=80)
+            EE_PASS = Entry(change_pass_t,show="#", bd=1)
+            EE_PASS.pack(padx=0, pady=50)
+            Label(change_pass_t, text="Repassword:").place(x=15,y=120)
+            EE_RPASS = Entry(change_pass_t,show="#", bd=1)
+            EE_RPASS.pack(padx=0, pady=0)
+            Button(change_pass_t, text = "Change", command = lambda: change_passw(change_pass_t,__,EE_PASS.get(),EE_RPASS.get()), background='red', width=10, height=1, foreground=set_button_fg).place(x=105,y=170)
+            change_pass_t.bind('<Return>', lambda cmd: change_passw(change_pass_t,__,EE_PASS.get(),EE_RPASS.get()))
+            change_pass_t.protocol("WM_DELETE_WINDOW", change_pass_t.destroy)
+            change_pass_t.mainloop()
+            return
+
+        def change_passw(EE_MAIN,EE_USER,EE_PASS,EE_RPASS):
+            global main1,list_user
+            if EE_USER=="":
+                popup("TypeError","Username must not empty!")
+            elif EE_USER not in list_user:
+                popup("UserExists","Username [{}] not exists!".format(str(EE_USER)))
+            elif EE_PASS==EE_RPASS:
+                Thread(target=add_passw, args=(EE_USER,EE_PASS)).start()
+                EE_MAIN.destroy()
+                main1.attributes('disabled', False)
+            else:
+                popup("TypeError","The password you entered does not match!")
             return
 
         def is_admin():
@@ -113,6 +147,12 @@ if __name__=='__main__':
             except ValueError:
                 popup("TypeError",f"Run cannot be empty!")
                 return
+            except AttributeError:
+                if str(khanhnguyen9872)!="":
+                    cmd=str(khanhnguyen9872)
+                else:
+                    popup("TypeError",f"Run cannot be empty!")
+                    return
             cmd_path=Path(cmd)
             if (cmd==""):
                 popup("TypeError",f"Run cannot be empty!")
@@ -128,9 +168,7 @@ if __name__=='__main__':
             nameprogram=str("/".join(cmd.split("\\")).split("/")[-1])
             global allow_program
             type_exec = str(nameprogram.split(".")[-1])
-            if type_exec in allow_program:
-                pass
-            else:
+            if type_exec not in allow_program:
                 popup("TypeFileError","File [{}] not allowed!".format(nameprogram))
                 return
             global systemdrive,full_path
@@ -331,27 +369,41 @@ if __name__=='__main__':
                 __=value
                 if (noload==0):
                     if (temp2==0):
-                        #group
+                        # group
                         L22 = Label(main1, text="Group:", background=set_bg, foreground=set_fg)
                         L22.place_forget()
                         L22.place(x=130,y=22)
 
-                        #active
+                        # active
                         L23 = Label(main1, text="Active:", background=set_bg, foreground=set_fg)
                         L23.place_forget()
                         L23.place(x=130,y=44)
 
-                        #password
+                        # terminal
+                        T23 = Label(main1, text="Terminal:", background=set_bg, foreground=set_fg)
+                        T23.place_forget()
+                        T23.place(x=130,y=66)
+                        T22 = Button(main1, text = "CMD", width=7, height = 1, command = lambda: Thread(target=run_app, args=(__,"{}\\Windows\\system32\\cmd.exe".format(str(systemdrive)))).start(), background=set_button_bg, foreground=set_button_fg)
+                        T22.place_forget()
+                        T22.place(x=190,y=66)
+
+                        # change password
+                        T22 = Button(main1, text = "Change Password", width=16, height = 1, command = lambda: change_pass(__), background=set_button_bg, foreground=set_button_fg)
+                        T22.place_forget()
+                        T22.place(x=450,y=66)
+
+                        # password
                         L24 = Label(main1, text="Password:", font=('Arial', 10, 'bold'), background=set_bg, foreground=set_fg)
                         L24.place_forget()
                         L24.place(x=130,y=145)
 
-                        #warning
+                        # warning
                         L24 = Label(main1, text="If the app requires Administrator, please tick Administrators for this user before run", font=('Arial', 8, 'bold'), background=set_bg, foreground='red')
                         L24.place_forget()
                         L24.place(x=128,y=180)
                         temp2=1
-                    #user
+
+                    # user
                     NAME_USER_L = Label(main1, text="                                                                                                                                                          ", background=set_bg, foreground=set_bg)
                     NAME_USER_L.place_forget()
                     NAME_USER_L.place(x=130,y=0)
@@ -359,7 +411,7 @@ if __name__=='__main__':
                     NAME_USER_L.place_forget()
                     NAME_USER_L.place(x=130,y=0)
                     
-                    #group
+                    # group
                     x=0
                     for y in group:
                         for item in list_user:
@@ -367,7 +419,7 @@ if __name__=='__main__':
                         globals()["checkbox{}{}".format(value, y)].place(x=175+x,y=20)
                         x+=120
                     
-                    #active
+                    # active
                     for item in list_user:
                         globals()["active{}".format(item)].place_forget()
                     globals()["active{}".format(__)].place(x=175,y=42)
@@ -383,9 +435,7 @@ if __name__=='__main__':
                     op_B2.place(x=45,y=170)
                     if (str(getlogin())==str(__)) or __ in system_user:
                         op_B2["state"] = "disabled"
-                        if (__ in system_user):
-                            pass
-                        else:
+                        if (__ not in system_user):
                             B22["state"] = "disabled"
 
                 for item in list_user:
@@ -405,7 +455,7 @@ if __name__=='__main__':
 
             listbox.bind('<<ListboxSelect>>', onselect)
             
-            #below list user
+            # below list user
             op_B1 = Button(main1, text = "Add", command = lambda: create_user(), background='green', foreground=set_button_fg)
             op_B1.place_forget()
             op_B1.place(x=3,y=170)
@@ -413,13 +463,13 @@ if __name__=='__main__':
             op_B3.place_forget()
             op_B3.place(x=80,y=170)
             
-            #below program
+            # below program
             Label(mainbottom, text="Run:").pack(side = LEFT)
             Label(mainbottom, text="https://fb.me/khanh10a1").pack(side = RIGHT)
             E1 = Entry(mainbottom, bd=1, width=56)
             E1.insert(END, f"{systemdrive}\\Windows\\system32\\cmd.exe")
             E1.pack(side = LEFT)
-            main1.bind('<Return>', lambda cmd: run_app(__,E1))
+            main1.bind('<Return>', lambda cmd: Thread(target=run_app, args=(__,E1)).start())
             main1.bind('<F5>', lambda cmd: reload_main(main1))
             Button(mainbottom, text = "Browse", command = lambda: browse_app(E1), background='green', foreground=set_button_fg).pack(side=LEFT)
             Button(mainbottom, text = "RUN", command = lambda: Thread(target=run_app, args=(__,E1)).start(), background='red', foreground=set_button_fg).pack(side=LEFT)
