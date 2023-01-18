@@ -1,1 +1,1 @@
-python multi.py
+python main.py

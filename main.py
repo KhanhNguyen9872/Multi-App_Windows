@@ -138,7 +138,7 @@ if __name__=='__main__':
                 En.insert(END, a)
             return
 
-        def run_app(__,khanhnguyen9872):
+        def run_app(__,khanhnguyen9872=""):
             if __=="":
                 popup("NoUser",f"Please choose one user before Run!")
                 return
