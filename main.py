@@ -1,8 +1,20 @@
 if __name__=='__main__':
     from os import name
     if (name=="nt"):
+        def unlock_tkinter(mainerror):
+            global main1
+            try:
+                main1.attributes('-disabled', False)
+            except NameError:
+                    pass
+            mainerror.destroy()
+
         def popup(main,error,type_pop=1,exec_pop=""):
-            global set_bg,set_fg,set_entry_bg,set_button_bg,set_button_fg,mainerror
+            global main1,set_bg,set_fg,set_entry_bg,set_button_bg,set_button_fg,mainerror
+            try:
+                main1.attributes('-disabled', True)
+            except NameError:
+                pass
             mainerror = Tk()
             mainerror.title("{} | Python (KhanhNguyen9872)".format(str(main)))
             #mainerror.iconbitmap('khanh.ico')
@@ -12,13 +24,13 @@ if __name__=='__main__':
             texterror = Text(mainerror, background=set_bg, foreground=set_fg,font=("Arial", 10, 'bold'))
             texterror.insert(INSERT, str(error))
             texterror.pack()
-            btn = Button(mainerror, text = 'OK', command = mainerror.destroy, height = 0, width = 10)
+            btn = Button(mainerror, text = 'OK', command = lambda : unlock_tkinter(mainerror), height = 0, width = 10)
             btn.place(x=365, y=40)
             if type_pop==2:
                 btn.config(text = "NO")
-                btn1 = Button(mainerror, text = 'YES', command = lambda : exec(str(exec_pop)), height = 0, width = 10)
+                btn1 = Button(mainerror, text = 'YES', command = lambda : (exec(str(exec_pop)),unlock_tkinter(mainerror)), height = 0, width = 10)
                 btn1.place(x=280, y=40)
-            mainerror.protocol("WM_DELETE_WINDOW", mainerror.destroy)
+            mainerror.protocol("WM_DELETE_WINDOW", lambda : unlock_tkinter(mainerror))
             texterror.config(state=DISABLED)
             mainerror.mainloop()
             
@@ -104,6 +116,32 @@ if __name__=='__main__':
                 En.insert(END, a)
             return
 
+        def exec_batch(__,systemdrive,full_path,rand):
+            global log_error,is_ok
+            log_error = getoutput('\"{4}\\psexec.exe\" -u \"{0}\\\\{1}\" -p \"{3}\" \"{2}\\\\Temp\\\\{5}.bat\"'.format(str(gethostname()),str(__),str(systemdrive),str(globals()["pass{}".format(__)].get()),str(full_path),str(rand))).split()
+            is_ok=1
+            return
+
+        def start_thread(__,systemdrive,full_path,rand):
+            Thread(target=exec_batch,args=(__,systemdrive,full_path,rand)).start()
+
+        def get_error(systemdrive,rand):
+            global log_error
+            while log_error=="" or is_ok==0:
+                sleep(0.5)
+            if (str(log_error[-7]+" "+log_error[-6]+" "+log_error[-5]+" "+log_error[-4]+" "+log_error[-3]+" "+log_error[-2]+" "+log_error[-1]) == "The user name or password is incorrect."):
+                popup("PasswordError","Password error! If your User doesn't have a password, leave it blank!")
+            elif (str(log_error[-3]+" "+log_error[-2]) == "error code") and (str(log_error[-1]) != "0."):
+                popup("ProgramExitCode","[{}] return error code {}".format(str(nameprogram),str(log_error[-1])))
+            elif (str(log_error[-5]+" "+log_error[-4]+" "+log_error[-3]+" "+log_error[-2]+" "+log_error[-1]) == "policy restriction has been enforced."):
+                popup("UserDisabled","User [{}] has been disabled".format(str(__)))
+            elif (str(log_error[-7]+" "+log_error[-6]+" "+log_error[-5]+" "+log_error[-4]+" "+log_error[-3]+" "+log_error[-2]+" "+log_error[-1]) == "the requested logon type at this computer."):
+                popup("PermissionDenied","User [{}] has not been granted the requested logon type at this computer.".format(str(__)))
+            elif (str(log_error[-7]+" "+log_error[-6]+" "+log_error[-5]+" "+log_error[-4]+" "+log_error[-3]+" "+log_error[-2]+" "+log_error[-1]) == "password must be changed before signing in."):
+                popup("MustChangePassword","This user must change his password before using this tool!")
+            remove("{0}\\\\Temp\\\\{1}.bat".format(str(systemdrive),str(rand)))
+            return
+
         def run_app(__,khanhnguyen9872):
             if __=="":
                 popup("NoUser",f"Please choose one user before Run!")
@@ -159,16 +197,11 @@ if __name__=='__main__':
             if _==1:
                 return
             print("Starting ({}) [{}]...".format(str(nameprogram),str(__)))
-            temp1 = getoutput('\"{4}\\psexec.exe\" -u \"{0}\\\\{1}\" -p \"{3}\" \"{2}\\\\Temp\\\\{5}.bat\"'.format(str(gethostname()),str(__),str(systemdrive),str(globals()["pass{}".format(__)].get()),str(full_path),str(rand))).split()
-            if (str(temp1[-7]+" "+temp1[-6]+" "+temp1[-5]+" "+temp1[-4]+" "+temp1[-3]+" "+temp1[-2]+" "+temp1[-1]) == "The user name or password is incorrect."):
-                popup("PasswordError","Password error! If your User doesn't have a password, leave it blank!")
-            elif (str(temp1[-3]+" "+temp1[-2]) == "error code") and (str(temp1[-1]) != "0."):
-                popup("ProgramExitCode","[{}] return error code {}".format(str(nameprogram),str(temp1[-1])))
-            elif (str(temp1[-5]+" "+temp1[-4]+" "+temp1[-3]+" "+temp1[-2]+" "+temp1[-1]) == "policy restriction has been enforced."):
-                popup("UserDisabled","User [{}] has been disabled".format(str(__)))
-            elif (str(temp1[-7]+" "+temp1[-6]+" "+temp1[-5]+" "+temp1[-4]+" "+temp1[-3]+" "+temp1[-2]+" "+temp1[-1]) == "the requested logon type at this computer."):
-                popup("PermissionDenied","User [{}] has not been granted the requested logon type at this computer.".format(str(__)))
-            remove("{0}\\\\Temp\\\\{1}.bat".format(str(systemdrive),str(rand)))
+            global log_error,is_ok
+            log_error=""
+            is_ok=0
+            Thread(target=start_thread, args=(__,systemdrive,full_path,rand)).start()
+            Thread(target=get_error,args=(systemdrive,rand,)).start()
             return
 
         def center_screen(w,h,____):
@@ -261,7 +294,7 @@ if __name__=='__main__':
                 mkdir("{0}\\Temp".format(str(systemdrive)))
             main1 = Tk()
             main1.configure(background=set_bg)
-            main1.title('Multi-App Windows | (KhanhNguyen9872) | From Vietnamese with love <3')
+            main1.title('Multi-App Windows | (KhanhNguyen9872) | From Vietnam with love <3')
             #main1.iconbitmap('khanh.ico')
             main1.geometry(center_screen(605,230,main1))
             main1.resizable(False, False)
@@ -422,7 +455,7 @@ if __name__=='__main__':
             main1.bind('<Return>', lambda cmd: run_app(__,E1))
             main1.bind('<F5>', lambda cmd: reload_main(main1))
             Button(mainbottom, text = "Browse", command = lambda: browse_app(E1), background='green', foreground=set_button_fg).pack(side=LEFT)
-            Button(mainbottom, text = "RUN", command = lambda: Thread(target=run_app, args=(__,E1,)).start(), background='red', foreground=set_button_fg).pack(side=LEFT)
+            Button(mainbottom, text = "RUN", command = lambda: run_app(__,E1), background='red', foreground=set_button_fg).pack(side=LEFT)
             main1.protocol("WM_DELETE_WINDOW", lambda: popup("ExitProgram",f"Do you want to exit?",2,"kill_process()"))
             main1.mainloop()
             
@@ -462,6 +495,8 @@ if __name__=='__main__':
         set_button_fg="white"
         ___={}
         active={}
+        system("{}\\psexec.exe".format(full_path))
+        system("cls")
         tkinter_main()
     else:
         print("This tool only work on Windows!")
